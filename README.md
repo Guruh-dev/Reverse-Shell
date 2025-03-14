@@ -16,7 +16,7 @@ This repository contains reverse shell tool written in Python. This tool is for 
 - Necessary ports open and not blocked by firewalls.
 
 ## Usage
-git clone https://github.com/Killsecstasy/Reverse-Shell.git
+git clone https://github.com/Guruh-dev/Reverse-Shell.git
 
 cd Reverse-Shell
 
