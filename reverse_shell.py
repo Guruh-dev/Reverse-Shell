@@ -6,12 +6,14 @@ import sys
 import argparse
 import threading
 import time
+import textwrap
 
-     
-### banner
 def banner():
-            animation (f"""
-            {RED}
+    # 1. Define your ANSI color code up front
+    RED = "\033[31m"
+
+    # 2. Use a raw triple‑quoted string, left‑aligned (no extra indent)
+    ascii_art = r"""
  ██████╗ ███████╗██╗   ██╗███████╗██████╗ ███████╗███████╗    ███████╗██╗  ██╗███████╗██╗     ██╗     
 ██╔══██╗██╔════╝██║   ██║██╔════╝██╔══██╗██╔════╝██╔════╝    ██╔════╝██║  ██║██╔════╝██║     ██║     
 ██████╔╝█████╗  ██║   ██║█████╗  ██████╔╝███████╗█████╗█████╗███████╗███████║█████╗  ██║     ██║     
@@ -19,6 +21,15 @@ def banner():
 ██║  ██║███████╗ ╚████╔╝ ███████╗██║  ██║███████║███████╗    ███████║██║  ██║███████╗███████╗███████╗
 ╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝    ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝
 """
+
+    # (Optional) If you must keep indentation in your source, you can strip it at runtime:
+    ascii_art = textwrap.dedent(ascii_art)
+
+    # 3. Call animation() correctly, passing the colored banner
+    animation(f"{RED}{ascii_art}")
+
+# Example invocation
+banner()
 
 def list_local_ips():
     """Fungsi untuk mendapatkan dan menampilkan IP lokal yang tersedia."""
