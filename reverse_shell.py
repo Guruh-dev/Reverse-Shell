@@ -6,13 +6,22 @@ import sys
 import argparse
 import threading
 import time
+#!/usr/bin/env python3
 import textwrap
 
-def banner():
-    # 1. Define your ANSI color code up front
-    RED = "\033[31m"
+# ANSI color code
+RED = "\033[31m"
 
-    # 2. Use a raw triple‑quoted string, left‑aligned (no extra indent)
+def animation(text: str, delay: float = 0.005):
+    """Typewriter‑style print with a short pause between characters."""
+    for char in text:
+        sys.stdout.write(char)
+        sys.stdout.flush()
+        time.sleep(delay)
+    sys.stdout.write("\n")
+
+def banner():
+    # Raw string to avoid accidental escape‑sequence processing
     ascii_art = r"""
  ██████╗ ███████╗██╗   ██╗███████╗██████╗ ███████╗███████╗    ███████╗██╗  ██╗███████╗██╗     ██╗     
 ██╔══██╗██╔════╝██║   ██║██╔════╝██╔══██╗██╔════╝██╔════╝    ██╔════╝██║  ██║██╔════╝██║     ██║     
@@ -21,15 +30,14 @@ def banner():
 ██║  ██║███████╗ ╚████╔╝ ███████╗██║  ██║███████║███████╗    ███████║██║  ██║███████╗███████╗███████╗
 ╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝    ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝
 """
-
-    # (Optional) If you must keep indentation in your source, you can strip it at runtime:
+    # Remove any source‑code indentation, just in case
     ascii_art = textwrap.dedent(ascii_art)
-
-    # 3. Call animation() correctly, passing the colored banner
+    # Animate the colored banner
     animation(f"{RED}{ascii_art}")
 
-# Example invocation
-banner()
+if __name__ == "__main__":
+    banner()
+
 
 def list_local_ips():
     """Fungsi untuk mendapatkan dan menampilkan IP lokal yang tersedia."""
