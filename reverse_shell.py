@@ -5,7 +5,6 @@ import sys
 import argparse
 import threading
 import time
-#!/usr/bin/env python3
 import textwrap
 
 # ANSI color code
