@@ -7,7 +7,6 @@ import threading
 import time
 import textwrap
 
-# ANSI color code
 RED = "\033[31m"
 
 def animation(text: str, delay: float = 0.005):
